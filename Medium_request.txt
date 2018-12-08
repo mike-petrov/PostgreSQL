@@ -1,0 +1,33 @@
+--------------------1--------------------
+Запрос: Выбрать Имя товара, Имя, Фамилию конкретного покупателя нижний регистр Имени и Фамилии которого равен заданным значениям.
+Допустимые параметры [__NAME__] AND [__SURNAME__]:
+    -('podolskii') AND ('roman')
+    -('filippov') AND ('roman')
+    -('grey') AND ('alexandr')
+Необходимость: Поиск Имени товаров которые купил конкретный покупатель.
+Оптимизация: Был добавлен индекс goods_buyers_name_idx_lower для осуществления фильтрации по нижнему регистру Имени и Фамилии покупателя.
+Sql-запрос:
+    SELECT g.name, b.name, b.surname FROM goods g JOIN buyers b ON (g.buyer_id = b.id) WHERE lower(b.name) = __NAME__ AND lower(b.surname) = __SURNAME__;
+Sql-оптимизация:
+    CREATE INDEX goods_buyers_name_idx_lower ON buyers((lower(name)),(lower(surname)));
+--------------------2--------------------
+Запрос: Выбрать Имя, Цену товара и Имя, Фамилию покупателей первых десяти Товаров отсортировав Товары по цене по убыванию.
+Допустимые параметры: -
+Необходимость: Просмотр Имени, Фамилии покупателей которые покупают самые дорогие товары в магазине чтобы предоставить им скидку.
+Оптимизация: Был добавлен индекс goods_buyers_price_idx для осуществления фильтрации по цене.
+Sql-запрос:
+    SELECT g.name, g.price, b.name, b.surname FROM goods g JOIN buyers b ON (g.buyer_id = b.id) ORDER BY price DESC LIMIT 10;
+Sql-оптимизация:
+    CREATE INDEX goods_buyers_price_idx ON goods(price);
+--------------------3--------------------
+Запрос: Выбрать Имя товара нижний регистр Позиции которой равен заданному значению.
+Допустимые параметры [__POSITION__]:
+    -('A1B1')
+    -('A9B6')
+    -('A1B4')
+Необходимость: Поиск Имени товаров на складе по его Позиции.
+Оптимизация: Был добавлен индекс goods_positions_name_idx_lower для осуществления фильтрации по нижнему регистру поля position.
+Sql-запрос:
+    SELECT g.name FROM goods g JOIN positions p ON (g.position_id = p.id) WHERE p.position = __POSITION__ ;
+Sql-оптимизация:
+    CREATE INDEX goods_positions_name_idx ON positions(position);

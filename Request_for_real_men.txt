@@ -1,0 +1,33 @@
+--------------------1--------------------
+Запрос: Выбрать Имя, Цену товаров и Страну производителя производителя конкретного покупателя нижний регистр Имени и Фамилии которого равен заданным значениям.
+Допустимые параметры [__NAME__] AND [__SURNAME__]:
+    -('podolskii') AND ('roman')
+    -('filippov') AND ('roman')
+    -('grey') AND ('alexandr')
+Необходимость: Поиск товаров которые купил конкретный покупатель.
+Оптимизация: Был добавлен индекс buyers_name_surname_idx_lower для осуществления фильтрации по нижнему регистру Имени и Фамилии покупателя.
+Sql-запрос:
+    WITH buyer_goods AS (SELECT g.name, g.price, g.id FROM goods g JOIN buyers b ON (g.buyer_id = b.id) WHERE lower(b.name) = __NAME__ AND lower(b.surname) = __SURNAME__) SELECT bg.name, bg.price, m.country FROM buyer_goods bg JOIN goods_manufacturers_relations rel ON (bg.id = rel.good_id) JOIN manufacturers m ON (rel.manufacturer_id = m.id);
+Sql-оптимизация:
+    CREATE INDEX buyers_name_surname_idx_lower ON buyers((lower(name)),(lower(surname)));
+--------------------2--------------------
+Запрос: Выбрать Позицию, Ответственного, Производетеля, Страну товара и Номер телефона производителя Позиция которого равна заданному значению.
+Допустимые параметры [__POSITION__]:
+    -('A1B1')
+    -('A3B3')
+    -('A1B4')
+Необходимость: Поиск информации о товаре по его Позиции на складе.
+Оптимизация: Был добавлен индекс goods_positions_name_idx для осуществления фильтрации поля position.
+Sql-запрос:
+    WITH position_good AS (SELECT p.id, p.position, p.name_loader FROM positions p JOIN goods g ON (p.id = g.position_id) WHERE p.position = __POSITION__) SELECT pg.position, pg.name_loader, m.name, m.country, m.phone_number FROM position_good pg JOIN goods_manufacturers_relations rel ON (pg.id = rel.good_id) JOIN manufacturers m ON (rel.manufacturer_id = m.id);
+Sql-оптимизация:
+    CREATE INDEX goods_positions_name_idx ON positions(position);
+--------------------3--------------------
+Запрос: Выбрать Имя, Фамилию, Отчество, Возраст, Тип покупателя сортируя их по кол-ву денег потраченных на товары.
+Допустимые параметры: -
+Необходимость: Просмотр людей которые больше всего потратили денег в магазине кроме покупателя 'Петрова' - это хозяин магазина.
+Оптимизация: Был добавлен индекс buyers_name_price_idx для осуществления фильтрации поля position.
+Sql-запрос:
+    WITH all_buyers AS (SELECT g.buyer_id, g.price, b.name, b.surname, b.patronymic, b.age, b.type FROM goods g JOIN buyers b ON (g.buyer_id = b.id) WHERE b.name!='Petrov') SELECT ab.name, ab.surname, ab.patronymic, ab.age, ab.type, sum(ab.price) FROM all_buyers ab GROUP BY ab.name, ab.surname, ab.buyer_id, ab.patronymic, ab.age, ab.type ORDER BY ab.buyer_id;
+Sql-оптимизация:
+    CREATE INDEX buyers_name_price_idx ON buyers(name);
