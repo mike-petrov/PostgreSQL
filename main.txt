@@ -1,0 +1,232 @@
+//Создание дампа
+pg_dump -p 8080 -U postgres --create --clean --if-exists m.petrov > m.petrov.sql
+
+//Таблицы
+CREATE TABLE goods (
+id int PRIMARY KEY DEFAULT nextval('goods_id_seq'),
+name varchar(30) NOT NULL,
+type varchar(30) NOT NULL,
+price int NOT NULL,
+position_id int UNIQUE,
+buyer_id int NOT NULL);
+
+CREATE TABLE positions (
+id int PRIMARY KEY DEFAULT nextval('positions_id_seq'),
+position varchar(10) NOT NULL,
+name_loader varchar(30) NOT NULL);
+
+CREATE TABLE buyers (
+id int PRIMARY KEY DEFAULT nextval('buyers_id_seq'),
+name varchar(30) NOT NULL,
+surname varchar(30) NOT NULL,
+patronymic varchar(30),
+age int NOT NULL,
+type varchar(30) NOT NULL);
+
+CREATE TABLE goods_manufacturers_relations (
+good_id int,
+manufacturer_id int,
+PRIMARY KEY(good_id, manufacturer_id));
+
+CREATE TABLE manufacturers (
+id int PRIMARY KEY DEFAULT nextval('manufacturers_id_seq'),
+name varchar(30) UNIQUE,
+country varchar(30) NOT NULL,
+phone_number bigint UNIQUE);
+
+//Заполнение данными
+INSERT INTO goods VALUES ('1','Pen','office','25','1','1');
+INSERT INTO goods VALUES ('2','Pen','office','25','2','2');
+INSERT INTO goods VALUES ('3','Pen','office','25','3','3');
+INSERT INTO goods VALUES ('4','Bread','food','50','4','4');
+INSERT INTO goods VALUES ('5','Notebook','office','100000','5','3');
+INSERT INTO goods VALUES ('6','Book','leisure','999','6','6');
+INSERT INTO goods VALUES ('7','Cheese','food','400','7','7');
+INSERT INTO goods VALUES ('8','Ham','food','1200','8','1');
+INSERT INTO goods VALUES ('9','Apple','food','30','9','9');
+INSERT INTO goods VALUES ('10','Shampoo','care','185','10','10');
+INSERT INTO goods VALUES ('11','Apple','food','30','11','5');
+INSERT INTO goods VALUES ('12','Apple','food','30','12','3');
+INSERT INTO goods VALUES ('13','TV','office','50000','13','11');
+INSERT INTO goods VALUES ('14','Cheese','food','400','14','10');
+INSERT INTO goods VALUES ('15','Bread','food','50','15','8');
+INSERT INTO goods VALUES ('16','Sock','clothes','150','16','11');
+INSERT INTO goods VALUES ('17','Pants','clothes','50','17','10');
+INSERT INTO goods VALUES ('18','Shorts','clothes','50','18','6');
+INSERT INTO goods VALUES ('19','T-shirt','clothes','50','19','8');
+INSERT INTO goods VALUES ('20','Hats','clothes','50','20','9');
+
+INSERT INTO positions VALUES ('1','A5B9','Bob');
+INSERT INTO positions VALUES ('2','A7B4','Bill');
+INSERT INTO positions VALUES ('3','A2B0','Jeck');
+INSERT INTO positions VALUES ('4','A4B2','Bill');
+INSERT INTO positions VALUES ('5','A4B5','Bob');
+INSERT INTO positions VALUES ('6','A1B1','Bob');
+INSERT INTO positions VALUES ('7','A3B2','Bob');
+INSERT INTO positions VALUES ('8','A9B6','Mike');
+INSERT INTO positions VALUES ('9','A7B6','Jeck');
+INSERT INTO positions VALUES ('10','A9B9','Bob');
+INSERT INTO positions VALUES ('11','A9B7','Jeck');
+INSERT INTO positions VALUES ('12','A9B8','Bill');
+INSERT INTO positions VALUES ('13','A1B2','Bob');
+INSERT INTO positions VALUES ('14','A1B3','Bill');
+INSERT INTO positions VALUES ('15','A1B4','Jeck');
+INSERT INTO positions VALUES ('16','A9B6','Jeck');
+INSERT INTO positions VALUES ('17','A3B3','Bill');
+INSERT INTO positions VALUES ('18','A8B2','Bob');
+INSERT INTO positions VALUES ('19','A1B9','Bill');
+INSERT INTO positions VALUES ('20','A1B5','Jeck');
+
+INSERT INTO buyers VALUES ('1','Petrov','Misha','Ivanovich','18','student');
+INSERT INTO buyers VALUES ('2','Ivanov','Daniil','Vladimirovich','28','worker');
+INSERT INTO buyers VALUES ('3','Petrova','Ksenia',null,'16','pupil');
+INSERT INTO buyers VALUES ('4','Sidorov','Ivan','Pavlovich','1','pupil');
+INSERT INTO buyers VALUES ('5','Pavlova','Kate',null,'85','pensioner');
+INSERT INTO buyers VALUES ('6','Zevs','Ilia',null,'21','student');
+INSERT INTO buyers VALUES ('7','Grey','Alexandr','Pavlovich','20','student');
+INSERT INTO buyers VALUES ('8','Blur','Ivan',null,'40','worker');
+INSERT INTO buyers VALUES ('9','Podolskii','Roman', null,'36','worker');
+INSERT INTO buyers VALUES ('10','Filippov','Roman','Sergeyevich','12','pupil');
+INSERT INTO buyers VALUES ('11','Ibiza','Sarah','Danilovna','15','pupil');
+
+INSERT INTO goods_manufacturers_relations VALUES ('1','1');
+INSERT INTO goods_manufacturers_relations VALUES ('2','2');
+INSERT INTO goods_manufacturers_relations VALUES ('3','3');
+INSERT INTO goods_manufacturers_relations VALUES ('4','4');
+INSERT INTO goods_manufacturers_relations VALUES ('5','5');
+INSERT INTO goods_manufacturers_relations VALUES ('6','3');
+INSERT INTO goods_manufacturers_relations VALUES ('7','7');
+INSERT INTO goods_manufacturers_relations VALUES ('8','8');
+INSERT INTO goods_manufacturers_relations VALUES ('9','9');
+INSERT INTO goods_manufacturers_relations VALUES ('10','2');
+INSERT INTO goods_manufacturers_relations VALUES ('11','1');
+INSERT INTO goods_manufacturers_relations VALUES ('12','4');
+INSERT INTO goods_manufacturers_relations VALUES ('13','2');
+INSERT INTO goods_manufacturers_relations VALUES ('14','2');
+INSERT INTO goods_manufacturers_relations VALUES ('15','3');
+
+INSERT INTO manufacturers VALUES ('1','Giusti','Italia',88005553535);
+INSERT INTO manufacturers VALUES ('2','PepsiCo','Russia',88005009090);
+INSERT INTO manufacturers VALUES ('3','Jls Foods International','USA',89059660000);
+INSERT INTO manufacturers VALUES ('4','Concern Treize','Russia',89994307075);
+INSERT INTO manufacturers VALUES ('5','Mercury Inc','USA',89059882030);
+INSERT INTO manufacturers VALUES ('6','Ausa Global','Russia',85553439292);
+INSERT INTO manufacturers VALUES ('7','General Electric','Sweden',89317136256);
+INSERT INTO manufacturers VALUES ('8','AgroUnion','Russia',89512347542);
+INSERT INTO manufacturers VALUES ('9','Del Monte Fresh Produce','USA',89516172020);
+
+//Ограничения
+ALTER TABLE goods ADD CHECK (name <>'');
+ALTER TABLE buyers ADD CHECK (name <>'');
+ALTER TABLE buyers ADD CHECK (surname <>'');
+ALTER TABLE buyers ADD CHECK (name <> surname);
+ALTER TABLE manufacturers ADD CHECK (name <>'');
+ALTER TABLE manufacturers ADD CHECK (phone_number > 8900000000);
+ALTER TABLE manufacturers ADD CHECK (phone_number < 90000000000);
+ALTER TABLE positions ADD CHECK (position <> '0');
+ALTER TABLE positions ADD CHECK (name_loader <> '');
+ALTER TABLE manufacturers ADD CHECK (country <> '');
+
+//Связи
+ALTER TABLE goods ADD CONSTRAINT id_good_positions_fk FOREIGN KEY (position_id) REFERENCES positions(id);
+ALTER TABLE goods ADD CONSTRAINT id_good_buyer_fk FOREIGN KEY (buyer_id) REFERENCES buyers(id);
+ALTER TABLE goods_manufacturers_relations ADD CONSTRAINT id_relation_good_fk FOREIGN KEY (good_id) REFERENCES goods(id);
+ALTER TABLE goods_manufacturers_relations ADD CONSTRAINT id_relation_manufacturers_fk FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(id);
+
+//Последовательности
+CREATE SEQUENCE goods_id_seq;
+CREATE SEQUENCE positions_id_seq;
+CREATE SEQUENCE buyers_id_seq;
+CREATE SEQUENCE manufacturers_id_seq;
+ALTER SEQUENCE goods_id_seq OWNED BY goods.id;
+ALTER SEQUENCE positions_id_seq OWNED BY positions.id;
+ALTER SEQUENCE buyers_id_seq OWNED BY buyers.id;
+ALTER SEQUENCE manufacturers_id_seq OWNED BY manufacturers.id;
+
+//Генерация данных
+INSERT INTO goods VALUES ('1','Pen','office','25','1','1');
+
+insert into goods (
+select
+	generate_series(21, 100000),
+	chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('a') + (random()*25)::integer)
+		|| chr(ascii('a') + (random()*25)::integer)
+		|| chr(ascii('a') + (random()*25)::integer)
+		|| chr(ascii('a') + (random()*25)::integer),
+	(case when random() > 0.5 then 'office' else 'food' end),
+	round(random()*1000) + (random()*100) + (random()*10) + (random()),
+    generate_series(21, 100000),
+    round(random()*10)+1
+);
+
+INSERT INTO positions VALUES ('1','A5B9','Bob');
+
+insert into positions (
+select
+	generate_series(21, 100000),	
+	chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer),
+	(case when random() > 0.5 then 'Bob' else 'Mike' end)
+);
+
+INSERT INTO buyers VALUES ('1','Petrov','Misha','Ivanovich','18','student');
+
+insert into buyers (
+select
+	generate_series(12, 100000),	
+	chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer),
+	chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer),
+	chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer),
+	round(random()*10)+1,
+    (case when random() > 0.5 then 'student' else 'worker' end)
+);
+
+INSERT INTO goods_manufacturers_relations VALUES ('1','1');
+
+insert into goods_manufacturers_relations (
+select
+	generate_series(16, 10000),
+	round(random()*10)+1
+);
+
+INSERT INTO manufacturers VALUES ('1','Giusti','Italia',88005553535);
+
+insert into manufacturers (
+select
+	generate_series(10, 10000),	
+	chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer),
+	chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer)
+		|| chr(ascii('A') + (random()*25)::integer),
+	round(89000000000) + (random()*100000000) + (random()*10000000) + (random()*1000000) + (random()*100000) + (random()*10000) + (random()*1000) + (random()*100) + (random()*10) + (random())
+);
